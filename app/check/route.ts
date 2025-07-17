@@ -15,6 +15,13 @@ const sites = [
         dashboardUrl: 'https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/articles.centercentre.com/dashboard'
     },
     {
+        name: 'UIE Assets',
+        url: 'https://asset.uie.com/',
+        testUrl: 'https://asset.uie.com/pdf/2025-07-07-Why-Designing-for-GenAI-is-Different.pdf',
+        adminUrl: 'https://www.notion.so/centercentre/PDF-Image-Hosting-201903316fdd8067ac01d1cd3b8dd980?source=copy_link',
+        dashboardUrl: 'https://www.notion.so/centercentre/PDF-Image-Hosting-201903316fdd8067ac01d1cd3b8dd980?source=copy_link'
+    },
+    {
         name: 'Forms',
         url: 'https://form.centercentre.com/home',
         testUrl: 'https://form.centercentre.com/forms/contact',
