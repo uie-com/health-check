@@ -1,0 +1,122 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+
+const sites = [
+    {
+        name: 'CC Home',
+        url: 'https://centercentre.com',
+        adminUrl: 'https://centercentre.com/wp-admin',
+        dashboardUrl: 'https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/centercentre.com/dashboard'
+    },
+    {
+        name: 'Articles',
+        url: 'https://articles.centercentre.com',
+        adminUrl: 'https://articles.centercentre.com/wp-admin',
+        dashboardUrl: 'https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/articles.centercentre.com/dashboard'
+    },
+    {
+        name: 'Forms',
+        url: 'https://form.centercentre.com/home',
+        testUrl: 'https://form.centercentre.com/forms/contact',
+        adminUrl: 'https://form.centercentre.com/home',
+        dashboardUrl: 'https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour'
+    },
+    {
+        name: 'Visions',
+        url: 'https://visions.centercentre.com',
+        adminUrl: 'https://github.com/uie-admin/program-sites',
+        dashboardUrl: 'https://app.netlify.com/projects/ux-vision/overview',
+    },
+    {
+        name: 'Metrics',
+        url: 'https://metrics.centercentre.com',
+        adminUrl: 'https://github.com/uie-admin/program-sites',
+        dashboardUrl: 'https://app.netlify.com/projects/ux-metrics-center-centre/overview',
+
+    },
+    {
+        name: 'Research',
+        url: 'https://research.centercentre.com',
+        adminUrl: 'https://github.com/uie-admin/program-sites',
+        dashboardUrl: 'https://app.netlify.com/projects/ux-research-center-centre/overview',
+
+    },
+    {
+        name: 'Win Stakeholders',
+        url: 'https://research.centercentre.com',
+        adminUrl: 'https://github.com/uie-admin/program-sites',
+        dashboardUrl: 'https://app.netlify.com/projects/winstakeholders/overview',
+    },
+    {
+        name: 'GCal Service',
+        url: 'https://form.centercentre.com:7778',
+        adminUrl: 'https://github.com/alextyang/gcal-sync',
+        dashboardUrl: 'https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour'
+    },
+    {
+        name: 'PDF Service',
+        url: 'https://pdf.centercentre.com',
+        testUrl: 'https://pdf.centercentre.com/view?q=2025-08-19-metrics-topic-1-cohort-10',
+        adminUrl: 'https://github.com/alextyang/cc-pdf',
+        dashboardUrl: 'https://app.netlify.com/projects/uie-pdf/overview'
+    },
+];
+
+const downWebhook = process.env.SLACK_DOWN_WEBHOOK ?? '';
+const upWebhook = process.env.SLACK_UP_WEBHOOK ?? '';
+
+export async function GET(request: NextRequest) {
+    const urlParams = request.nextUrl.searchParams;
+    const trySite = urlParams.get('site');
+
+    const results = await Promise.all(sites.map(async (site) => {
+        try {
+            const response = await fetch(site.testUrl || site.url, { method: 'HEAD' });
+            console.log(`[HEALTH-CHECK] ${site.name} - ${response.status} ${response.statusText}`);
+            return { status: response.ok ? 'up' : 'down', code: response.status, error: 'No response', ...site };
+        } catch (error: any) {
+            return { status: 'down', error: error.message, code: error.status, ...site };
+        }
+    }));
+
+    const downSites = results.filter(result => result.status === 'down');
+    for (const site of downSites) {
+        const payload = {
+            message: `${site.code || ''} ${site.error || 'No response'}`,
+            name: site.name,
+            url: site.url,
+            adminUrl: site.adminUrl,
+            dashboardUrl: site.dashboardUrl,
+            tryUrl: process.env.URL + '/check?site=' + (site.name),
+        };
+        await fetch(downWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Rate limit to avoid hitting Slack's limits
+    }
+
+    if (trySite) {
+        const site = sites.find(s => s.name.toLowerCase() === trySite.toLowerCase());
+        const downSite = downSites.find(s => s.name.toLowerCase() === trySite.toLowerCase());
+        if (site && !downSite) {
+            const payload = {
+                name: site.name,
+                url: site.url,
+                adminUrl: site.adminUrl,
+                dashboardUrl: site.dashboardUrl,
+                tryUrl: process.env.URL + '/?site=' + (site.name),
+            };
+            await fetch(upWebhook, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+        }
+    }
+
+    return NextResponse.json({ status: 'ok', message: 'Health check passed' });
+}
