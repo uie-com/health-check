@@ -63,7 +63,7 @@ const sites = [
     {
         name: 'PDF Service',
         url: 'https://pdf.centercentre.com',
-        testUrl: 'https://pdf.centercentre.com/view?q=2025-08-19-metrics-topic-1-cohort-10',
+        testUrl: 'https://pdf.centercentre.com/create',
         adminUrl: 'https://github.com/alextyang/cc-pdf',
         dashboardUrl: 'https://app.netlify.com/projects/uie-pdf/overview'
     },
