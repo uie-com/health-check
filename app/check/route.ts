@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
             url: site.url,
             adminUrl: site.adminUrl,
             dashboardUrl: site.dashboardUrl,
-            tryUrl: process.env.URL + '/check?site=' + (site.name),
+            tryUrl: process.env.APP_URL + '/check?site=' + (site.name),
         };
         await fetch(downWebhook, {
             method: 'POST',
