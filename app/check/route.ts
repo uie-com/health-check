@@ -56,8 +56,14 @@ const sites = [
     },
     {
         name: 'GCal Service',
-        url: 'https://form.centercentre.com:7778',
+        url: 'https://gcal.centercentre.com',
         adminUrl: 'https://github.com/alextyang/gcal-sync',
+        dashboardUrl: 'https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour'
+    },
+    {
+        name: 'Postmark Email Server',
+        url: 'https://postmark.centercentre.com',
+        adminUrl: 'https://github.com/alextyang/postmark-scheduler',
         dashboardUrl: 'https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour'
     },
     {
