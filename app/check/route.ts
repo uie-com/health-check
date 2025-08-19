@@ -73,6 +73,13 @@ const sites = [
         adminUrl: 'https://github.com/alextyang/cc-pdf',
         dashboardUrl: 'https://app.netlify.com/projects/uie-pdf/overview'
     },
+    {
+        name: 'Airtable Middleman',
+        url: 'https://airtable.centercentre.com',
+        testUrl: 'https://airtable.centercentre.com/create',
+        adminUrl: 'https://github.com/alextyang/airtable-cache',
+        dashboardUrl: 'https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour'
+    },
 ];
 
 const downWebhook = process.env.SLACK_DOWN_WEBHOOK ?? '';
