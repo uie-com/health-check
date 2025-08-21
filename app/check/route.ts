@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
                 url: site.url,
                 adminUrl: site.adminUrl,
                 dashboardUrl: site.dashboardUrl,
-                tryUrl: process.env.APP_URL + '/?site=' + (site.name),
+                tryUrl: process.env.APP_URL + '/?site=' + encodeURIComponent(site.name),
             };
             await fetch(upWebhook, {
                 method: 'POST',
