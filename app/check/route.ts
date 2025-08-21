@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
             body: JSON.stringify(payload),
         });
 
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Rate limit to avoid hitting Slack's limits
+        await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     if (trySite) {
