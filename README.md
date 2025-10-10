@@ -1,13 +1,13 @@
 # Health Check
 
-The **Health Check** pings your web properties on a schedule and posts concise Slack alerts when any site fails to respond.  
+The **Health Check** pings our web properties on a schedule and posts concise Slack alerts when any site fails to respond.  
 It’s built as a lightweight Next.js service that uses fast `HEAD` requests, per-site configuration, and a one-click **Check Again** link to confirm recovery.
 
 ## 🧭 Overview
 
 - **What it does:** Sweeps through a configured list of sites, pings each with `HEAD`, and reports **down** or **recovered** to Slack.
-- **Where alerts go:** Your chosen Slack channel (e.g., `#cc-websites`) via incoming webhooks.
-- **How often:** Every ~15 minutes (via your hosting scheduler or an external cron/uptime pinger).
+- **Where alerts go:** Our chosen Slack channel (e.g., `#cc-websites`) via incoming webhooks.
+- **How often:** Every ~15 minutes (via our hosting scheduler or an external cron/uptime pinger).
 - **Endpoints:**
   - `/check` — runs a full sweep and posts alerts for any sites that are down.
   - `/check?site=<Name>` — re-checks a single site by **name** and posts a **site is up** confirmation if recovered.
@@ -81,7 +81,7 @@ Set two Slack Incoming Webhooks (or compatible endpoints):
 - The service logs each probe: `[HEALTH-CHECK] <name> - <status code> <status text>`.
 - Errors are caught; failed fetches are treated as “down”.
 
-## 🚦 How it works (from the code)
+## 🚦 How it works
 
 - Iterates `sites` and runs `fetch(testUrl || url, { method: 'HEAD' })`.
 - Builds two lists:
@@ -93,8 +93,10 @@ Set two Slack Incoming Webhooks (or compatible endpoints):
 
 ## 🏗️ Hosting
 
-- **Recommended:** Netlify (Next.js server/edge functions).  
-  New commits auto-publish; edge functions provide high reliability independent of your infra.
+Currently hosted on Netlify (uses Next.js server/edge functions).  
+New commits auto-publish. 
+Edge functions provide high reliability independent of our infrastructure.
+
 - **Any host works** as long as it can:
   - Serve a Next.js app
   - Run the `/check` endpoint reliably
@@ -134,10 +136,7 @@ npm install
 ```
 
 2) Configure env
-```bash
-cp .env.example .env.local
-# set APP_URL to http://localhost:3000 and paste Slack webhook URLs
-```
+See [Notion documentation](https://www.notion.so/centercentre/Health-Check-285903316fdd80b78e35edefcff0320d?source=copy_link)
 
 3) Run
 ```bash
@@ -150,4 +149,4 @@ curl -s http://localhost:3000/check
 
 - **Simulate a failure:** Temporarily point a site’s `testUrl` to a non-existent path; confirm a **down** alert appears.  
 - **Confirm recovery:** Use the **Check Again** link (or `GET /check?site=<Name>`) to verify the **up** message posts.
-- **Rate limits:** If your webhook has strict limits, keep the 1s delay between messages (present in the code).
+- **Rate limits:** If the webhook has strict limits, keep the 1s delay between messages (present in the code).
