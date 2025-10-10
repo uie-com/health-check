@@ -151,7 +151,3 @@ curl -s http://localhost:3000/check
 - **Simulate a failure:** Temporarily point a site’s `testUrl` to a non-existent path; confirm a **down** alert appears.  
 - **Confirm recovery:** Use the **Check Again** link (or `GET /check?site=<Name>`) to verify the **up** message posts.
 - **Rate limits:** If your webhook has strict limits, keep the 1s delay between messages (present in the code).
-
-## 📄 License
-
-Released under the **MIT License** (or your preferred OSS license). See `LICENSE`.
