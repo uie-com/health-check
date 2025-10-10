@@ -1,36 +1,157 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Health Check
 
-## Getting Started
+The **Health Check** pings your web properties on a schedule and posts concise Slack alerts when any site fails to respond.  
+It’s built as a lightweight Next.js service that uses fast `HEAD` requests, per-site configuration, and a one-click **Check Again** link to confirm recovery.
 
-First, run the development server:
+## 🧭 Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **What it does:** Sweeps through a configured list of sites, pings each with `HEAD`, and reports **down** or **recovered** to Slack.
+- **Where alerts go:** Your chosen Slack channel (e.g., `#cc-websites`) via incoming webhooks.
+- **How often:** Every ~15 minutes (via your hosting scheduler or an external cron/uptime pinger).
+- **Endpoints:**
+  - `/check` — runs a full sweep and posts alerts for any sites that are down.
+  - `/check?site=<Name>` — re-checks a single site by **name** and posts a **site is up** confirmation if recovered.
+  - `/` — redirects to `/check`.
+
+## ⚙️ Configuration
+
+### 1) Sites to monitor
+
+Sites are defined in code as an array of objects:
+
+```ts
+const sites = [
+  {
+    name: 'CC Home',
+    url: 'https://centercentre.com',
+    // Optional overrides per site:
+    testUrl: 'https://asset.uie.com/pdf/example.pdf', // used for the actual HEAD request if present
+    adminUrl: 'https://centercentre.com/wp-admin',     // shown in Slack
+    dashboardUrl: 'https://panel.example.com/...'      // shown in Slack
+  },
+  // ...
+];
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **`url`** is the public URL you care about.
+- **`testUrl` (optional)** is a deeper URL that’s better at detecting real problems (e.g., a known asset or sub-page).
+- **`adminUrl` / `dashboardUrl` (optional)** are convenience links included in the Slack alert to triage faster.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> The **name** field must be unique and stable; the **Check Again** link uses it as the lookup key.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2) Slack webhooks
 
-## Learn More
+Set two Slack Incoming Webhooks (or compatible endpoints):
 
-To learn more about Next.js, take a look at the following resources:
+- **Down webhook** (`SLACK_DOWN_WEBHOOK`) — receives “site is down” alerts.
+- **Up webhook** (`SLACK_UP_WEBHOOK`) — receives “site is up again” confirmations.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Payload shape sent by this service:**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```json
+{
+  "message": "500 Internal Server Error",    // or "No response", etc. (only on DOWN)
+  "name": "PDF Service",
+  "url": "https://pdf.centercentre.com",
+  "adminUrl": "https://github.com/org/repo",
+  "dashboardUrl": "https://app.netlify.com/projects/uie-pdf/overview",
+  "tryUrl": "https://your-app.example.com/check?site=PDF%20Service"
+}
+```
 
-## Deploy on Vercel
+> Your Slack app/workflow should format this into a rich message and render **Check Again** using `tryUrl`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔌 API
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### `GET /check`
+- Pings each configured site with a `HEAD` request:
+  - `testUrl` if set, else `url`.
+- For every **down** result, posts a payload to `SLACK_DOWN_WEBHOOK`.
+- Returns:  
+  ```json
+  { "status": "ok", "message": "Health check passed" }
+  ```
+
+### `GET /check?site=<Name>`
+- Re-checks only the named site (matching is case-insensitive).
+- If the site is **up**, posts a confirmation payload to `SLACK_UP_WEBHOOK`.
+- Useful for the **Check Again** button in Slack.
+
+**Notes:**
+- The service logs each probe: `[HEALTH-CHECK] <name> - <status code> <status text>`.
+- Errors are caught; failed fetches are treated as “down”.
+
+## 🚦 How it works (from the code)
+
+- Iterates `sites` and runs `fetch(testUrl || url, { method: 'HEAD' })`.
+- Builds two lists:
+  - **downSites** — any site with a thrown error or non-OK status.
+  - **recoveries** — when a user triggers `?site=<Name>` and that site now responds OK.
+- Posts Slack messages with useful links:
+  - `url`, `adminUrl`, `dashboardUrl`, and `tryUrl` (the **Check Again** link).
+- Adds a 1s delay between messages to avoid webhook rate limiting.
+
+## 🏗️ Hosting
+
+- **Recommended:** Netlify (Next.js server/edge functions).  
+  New commits auto-publish; edge functions provide high reliability independent of your infra.
+- **Any host works** as long as it can:
+  - Serve a Next.js app
+  - Run the `/check` endpoint reliably
+  - Offer a scheduler or allow an external pinger
+
+### Scheduling the sweep (every ~15 minutes)
+
+Pick one of these:
+- **Netlify Scheduled Functions** (or equivalent) to hit `/check`.
+- **External cron** (e.g. GitHub Actions, Uptimerobot, healthchecks.io) that runs:
+  ```bash
+  curl -fsS https://your-app.example.com/check
+  ```
+
+## 🔐 Environment
+
+Create a `.env` (or provider-specific secrets) in the project root:
+
+```dotenv
+# The public base URL of this service (used to build "Check Again" links)
+APP_URL=https://your-app.example.com
+
+# Slack incoming webhooks
+SLACK_DOWN_WEBHOOK=https://hooks.slack.com/... (down alerts)
+SLACK_UP_WEBHOOK=https://hooks.slack.com/...   (recovery confirmations)
+```
+
+> Any FTP-related variables from older examples are **not used** by the code shown here.
+
+## 🧑‍💻 Local Setup
+
+1) Clone & install
+```bash
+git clone https://github.com/yourname/health-check
+cd health-check
+npm install
+```
+
+2) Configure env
+```bash
+cp .env.example .env.local
+# set APP_URL to http://localhost:3000 and paste Slack webhook URLs
+```
+
+3) Run
+```bash
+npm run dev
+# in another shell:
+curl -s http://localhost:3000/check
+```
+
+## 🧪 Testing tips
+
+- **Simulate a failure:** Temporarily point a site’s `testUrl` to a non-existent path; confirm a **down** alert appears.  
+- **Confirm recovery:** Use the **Check Again** link (or `GET /check?site=<Name>`) to verify the **up** message posts.
+- **Rate limits:** If your webhook has strict limits, keep the 1s delay between messages (present in the code).
+
+## 📄 License
+
+Released under the **MIT License** (or your preferred OSS license). See `LICENSE`.
