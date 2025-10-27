@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     const downSites = results.filter(result => result.status === 'down');
     for (const site of downSites) {
         const payload = {
-            message: `${site.code || ''} ${site.error || 'No response'}  ${(!trySite) ? '(Retrying in 30s...)' : '(Retrying in 15m...)'}`,
+            message: `${site.code || ''} ${site.error || 'No response'}  ${(!trySite) ? '(Retrying in 30s...)' : '(Waiting 15m...)'}`,
             name: site.name,
             url: site.url,
             adminUrl: site.adminUrl,
