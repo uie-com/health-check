@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     const downSites = results.filter(result => result.status === 'down');
     for (const site of downSites) {
         const payload = {
-            message: `${site.code || ''} ${site.error || 'No response'}  ${(!trySite) ? '(Retrying in 30s...)' : '(Waiting 15m...)'}`,
+            message: `${site.code || ''} ${site.error || 'No response'}  ${(!trySite) ? '(Retrying in 60s...)' : '(Waiting 15m...)'}`,
             name: site.name,
             url: site.url,
             adminUrl: site.adminUrl,
@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
             fetch(`${process.env.URL}/.netlify/functions/retry-background`, {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ siteName: site.name, retryInMs: 30000 }),
+                body: JSON.stringify({ siteName: site.name, retryInMs: 60000 }),
             }).catch(() => { });
 
         await new Promise(resolve => setTimeout(resolve, 1000));
