@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
         });
 
         if (!trySite)
-            fetch(`${process.env.URL}/.netlify/functions/retry-site-background`, {
+            fetch(`${process.env.URL}/.netlify/functions/retry-background`, {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({ siteName: site, retryInMs: 30000 }),
@@ -126,8 +126,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (trySite) {
-        const site = sites.find(s => s.name.toLowerCase() === trySite.toLowerCase());
-        const downSite = downSites.find(s => s.name.toLowerCase() === trySite.toLowerCase());
+        const site = sites.find(s => s.name.toLowerCase() === trySite.toLowerCase()) ?? sites.find(s => s.name.toLowerCase() === decodeURIComponent(trySite).toLowerCase());
+        const downSite = downSites.find(s => s.name.toLowerCase() === trySite.toLowerCase()) ?? downSites.find(s => s.name.toLowerCase() === decodeURIComponent(trySite).toLowerCase());
         if (site && !downSite) {
             const payload = {
                 name: site.name,
