@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
         });
 
         if (!trySite)
-            await fetch(process.env.APP_URL + '/check?site=' + (site.name) + '&delay=' + (1000 * 30), { method: 'GET', });
+            fetch(process.env.APP_URL + '/check?site=' + (site.name) + '&delay=' + (1000 * 30), { method: 'GET', });
 
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
