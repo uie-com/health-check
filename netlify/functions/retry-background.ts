@@ -5,10 +5,7 @@ export default async (request: Request) => {
     await new Promise((r) => setTimeout(r, retryInMs));
 
     // call your Next.js route (use a full absolute URL)
-    await fetch(`${process.env.URL}/check?site=${encodeURIComponent(siteName)}`, {
-        method: 'GET',
-        headers: { 'x-internal-secret': process.env.INTERNAL_SECRET || '' },
-    });
+    await fetch(`${process.env.URL}/check?site=${encodeURIComponent(siteName)}`, { method: 'GET', });
 
     // Background functions return 202 immediately; no explicit response body needed
 };

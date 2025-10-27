@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
             fetch(`${process.env.URL}/.netlify/functions/retry-site-background`, {
                 method: 'POST',
                 headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ siteName: site, retryInMs: 30_000 }),
+                body: JSON.stringify({ siteName: site, retryInMs: 30000 }),
             }).catch(() => { });
 
         await new Promise(resolve => setTimeout(resolve, 1000));
