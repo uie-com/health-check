@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
             url: site.url,
             adminUrl: site.adminUrl,
             dashboardUrl: site.dashboardUrl,
-            tryUrl: process.env.APP_URL + '/check?site=' + (site.name),
+            tryUrl: process.env.APP_URL + '/check?site=' + encodeURIComponent(site.name),
         };
         await fetch(downWebhook, {
             method: 'POST',
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
         });
 
         if (!trySite)
-            fetch(process.env.APP_URL + '/check?site=' + (site.name) + '&delay=' + (1000 * 30), { method: 'GET', });
+            fetch(process.env.APP_URL + '/check?site=' + encodeURIComponent(site.name) + '&delay=' + (1000 * 30), { method: 'GET', });
 
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
                 url: site.url,
                 adminUrl: site.adminUrl,
                 dashboardUrl: site.dashboardUrl,
-                tryUrl: process.env.APP_URL + '/?site=' + encodeURIComponent(site.name.replaceAll(' ', '+')),
+                tryUrl: process.env.APP_URL + '/?site=' + encodeURIComponent(site.name),
             };
             await fetch(upWebhook, {
                 method: 'POST',
