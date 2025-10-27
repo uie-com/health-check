@@ -87,65 +87,72 @@ const upWebhook = process.env.SLACK_UP_WEBHOOK ?? '';
 
 export async function GET(request: NextRequest) {
     const urlParams = request.nextUrl.searchParams;
-    const trySite = urlParams.get('site');
-    const delay = urlParams.get('delay') ?? 0;
+    const retrySite = urlParams.get('site');
 
-    if (delay && Number(delay) > 0) {
-        console.log(`[HEALTH-CHECK] Delaying health check by ${delay} ms`);
-        await new Promise(resolve => setTimeout(resolve, Number(delay)));
-    }
-
-    const results = await Promise.all(sites.map(async (site) => {
-        try {
-            const response = await fetch(site.testUrl || site.url, { method: 'HEAD' });
-            console.log(`[HEALTH-CHECK] ${site.name} - ${response.status} ${response.statusText}`);
-            return { status: response.ok ? 'up' : 'down', code: response.status, error: 'No response', ...site };
-        } catch (error: any) {
-            return { status: 'down', error: error.message, code: error.status, ...site };
-        }
-    }));
+    const results = await Promise.all(sites.map(async (s) => trySite(s)));
 
     const downSites = results.filter(result => result.status === 'down');
     for (const site of downSites) {
-        const payload = {
-            message: `${site.code || ''} ${site.error || 'No response'}  ${(!trySite && !delay) ? '(Retrying in 30s...)' : '(Retrying in 15m...)'}`,
-            name: site.name,
-            url: site.url,
-            adminUrl: site.adminUrl,
-            dashboardUrl: site.dashboardUrl,
-            tryUrl: process.env.APP_URL + '/check?site=' + encodeURIComponent(site.name),
-        };
-        await fetch(downWebhook, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
+        sendError(site, `${site.code || ''} ${site.error || 'No response'}  ${(!retrySite) ? '(Retrying in 30s...)' : '(Retrying in 15m...)'}`);
 
-        if (!trySite && !delay)
-            await fetch(process.env.APP_URL + '/check?site=' + encodeURIComponent(site.name) + '&delay=' + (1000 * 30), { method: 'GET', });
+        if (!retrySite) {
+            await new Promise(resolve => setTimeout(resolve, 30000));
+
+            const retryResult = await trySite(site);
+
+            sendError(retryResult, `${retryResult.code || ''} ${retryResult.error || 'No response'}  ${'(Retrying in 15m...)'}`);
+        }
 
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    if (trySite) {
-        const site = sites.find(s => s.name.toLowerCase() === trySite.toLowerCase());
-        const downSite = downSites.find(s => s.name.toLowerCase() === trySite.toLowerCase());
-        if (site && !downSite) {
-            const payload = {
-                name: site.name,
-                url: site.url,
-                adminUrl: site.adminUrl,
-                dashboardUrl: site.dashboardUrl,
-                tryUrl: process.env.APP_URL + '/?site=' + encodeURIComponent(site.name),
-            };
-            await fetch(upWebhook, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-        }
+    if (retrySite) {
+        const site = sites.find(s => s.name.toLowerCase() === retrySite.toLowerCase());
+        const downSite = downSites.find(s => s.name.toLowerCase() === retrySite.toLowerCase());
+        if (site && !downSite)
+            await sendRecovery(site);
     }
 
     return NextResponse.json({ status: 'ok', message: 'Health check passed' });
 }
+
+async function trySite(site: any) {
+    try {
+        const response = await fetch(site.testUrl || site.url, { method: 'HEAD' });
+        console.log(`[HEALTH-CHECK] ${site.name} - ${response.status} ${response.statusText}`);
+        return { status: response.ok ? 'up' : 'down', code: response.status, error: 'No response', ...site };
+    } catch (error: any) {
+        return { status: 'down', error: error.message, code: error.status, ...site };
+    }
+}
+
+async function sendError(site: any, message: string) {
+    const payload = {
+        message,
+        name: site.name,
+        url: site.url,
+        adminUrl: site.adminUrl,
+        dashboardUrl: site.dashboardUrl,
+        tryUrl: process.env.APP_URL + '/check?site=' + encodeURIComponent(site.name),
+    };
+    await fetch(downWebhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    });
+}
+
+async function sendRecovery(site: any) {
+    const payload = {
+        name: site.name,
+        url: site.url,
+        adminUrl: site.adminUrl,
+        dashboardUrl: site.dashboardUrl,
+        tryUrl: process.env.APP_URL + '/?site=' + encodeURIComponent(site.name),
+    };
+    await fetch(upWebhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    });
+}   
