@@ -88,6 +88,12 @@ const upWebhook = process.env.SLACK_UP_WEBHOOK ?? '';
 export async function GET(request: NextRequest) {
     const urlParams = request.nextUrl.searchParams;
     const trySite = urlParams.get('site');
+    const delay = urlParams.get('delay') ?? 0;
+
+    if (delay && Number(delay) > 0) {
+        console.log(`[HEALTH-CHECK] Delaying health check by ${delay} ms`);
+        await new Promise(resolve => setTimeout(resolve, Number(delay)));
+    }
 
     const results = await Promise.all(sites.map(async (site) => {
         try {
@@ -114,6 +120,9 @@ export async function GET(request: NextRequest) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
+
+        if (!trySite)
+            await fetch(process.env.APP_URL + '/check?site=' + (site.name) + '&delay=' + (1000 * 30), { method: 'GET', });
 
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
