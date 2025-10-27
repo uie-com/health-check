@@ -7,5 +7,7 @@ export default async (request: Request) => {
     // call your Next.js route (use a full absolute URL)
     await fetch(`${process.env.URL}/check?site=${encodeURIComponent(siteName)}`, { method: 'GET', });
 
+    console.log(`[RETRY-BACKGROUND] Retried site: ${siteName} after ${retryInMs}ms with url ${process.env.URL}/check?site=${encodeURIComponent(siteName)}`);
+
     // Background functions return 202 immediately; no explicit response body needed
 };
