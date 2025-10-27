@@ -126,8 +126,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (trySite) {
+        console.log(`[HEALTH-CHECK] Retry check for site: ${trySite}`);
+
         const site = sites.find(s => s.name.toLowerCase() === trySite.toLowerCase()) ?? sites.find(s => s.name.toLowerCase() === decodeURIComponent(trySite).toLowerCase());
         const downSite = downSites.find(s => s.name.toLowerCase() === trySite.toLowerCase()) ?? downSites.find(s => s.name.toLowerCase() === decodeURIComponent(trySite).toLowerCase());
+
         if (site && !downSite) {
             const payload = {
                 name: site.name,
