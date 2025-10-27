@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
     const downSites = results.filter(result => result.status === 'down');
     for (const site of downSites) {
         const payload = {
-            message: `${site.code || ''} ${site.error || 'No response'}`,
+            message: `${site.code || ''} ${site.error || 'No response'}  ${(!trySite && !delay) ? '(Retrying in 30s...)' : '(Retrying in 15m...)'}`,
             name: site.name,
             url: site.url,
             adminUrl: site.adminUrl,
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
             body: JSON.stringify(payload),
         });
 
-        if (!trySite)
+        if (!trySite && !delay)
             fetch(process.env.APP_URL + '/check?site=' + encodeURIComponent(site.name) + '&delay=' + (1000 * 30), { method: 'GET', });
 
         await new Promise(resolve => setTimeout(resolve, 1000));
