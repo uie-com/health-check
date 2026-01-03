@@ -2,84 +2,94 @@ import { NextRequest, NextResponse } from 'next/server';
 
 //
 const sites = [
-    {
-        name: 'CC Home',
-        url: 'https://centercentre.com',
-        adminUrl: 'https://centercentre.com/wp-admin',
-        dashboardUrl: 'https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/centercentre.com/dashboard'
-    },
-    {
-        name: 'Articles',
-        url: 'https://articles.centercentre.com',
-        adminUrl: 'https://articles.centercentre.com/wp-admin',
-        dashboardUrl: 'https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/articles.centercentre.com/dashboard'
-    },
-    {
-        name: 'UIE Assets',
-        url: 'https://asset.uie.com/',
-        testUrl: 'https://asset.uie.com/pdf/2025-07-07-Why-Designing-for-GenAI-is-Different.pdf',
-        adminUrl: 'https://www.notion.so/centercentre/PDF-Image-Hosting-201903316fdd8067ac01d1cd3b8dd980?source=copy_link',
-        dashboardUrl: 'https://www.notion.so/centercentre/PDF-Image-Hosting-201903316fdd8067ac01d1cd3b8dd980?source=copy_link'
-    },
-    {
-        name: 'Forms',
-        url: 'https://form.centercentre.com/home',
-        testUrl: 'https://form.centercentre.com/forms/contact',
-        adminUrl: 'https://form.centercentre.com/home',
-        dashboardUrl: 'https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour'
-    },
-    {
-        name: 'Visions',
-        url: 'https://visions.centercentre.com',
-        adminUrl: 'https://github.com/uie-admin/program-sites',
-        dashboardUrl: 'https://app.netlify.com/projects/ux-vision/overview',
-    },
-    {
-        name: 'Metrics',
-        url: 'https://metrics.centercentre.com',
-        adminUrl: 'https://github.com/uie-admin/program-sites',
-        dashboardUrl: 'https://app.netlify.com/projects/ux-metrics-center-centre/overview',
-
-    },
-    {
-        name: 'Research',
-        url: 'https://research.centercentre.com',
-        adminUrl: 'https://github.com/uie-admin/program-sites',
-        dashboardUrl: 'https://app.netlify.com/projects/ux-research-center-centre/overview',
-
-    },
-    {
-        name: 'Win Stakeholders',
-        url: 'https://research.centercentre.com',
-        adminUrl: 'https://github.com/uie-admin/program-sites',
-        dashboardUrl: 'https://app.netlify.com/projects/winstakeholders/overview',
-    },
-    {
-        name: 'GCal Service',
-        url: 'https://gcal.centercentre.com',
-        adminUrl: 'https://github.com/alextyang/gcal-sync',
-        dashboardUrl: 'https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour'
-    },
-    {
-        name: 'Postmark Email Server',
-        url: 'https://postmark.centercentre.com',
-        adminUrl: 'https://github.com/alextyang/postmark-scheduler',
-        dashboardUrl: 'https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour'
-    },
-    {
-        name: 'PDF Service',
-        url: 'https://pdf.centercentre.com',
-        testUrl: 'https://pdf.centercentre.com/create',
-        adminUrl: 'https://github.com/alextyang/cc-pdf',
-        dashboardUrl: 'https://app.netlify.com/projects/uie-pdf/overview'
-    },
-    {
-        name: 'Airtable Middleman',
-        url: 'https://airtable.centercentre.com',
-        testUrl: 'https://airtable.centercentre.com/v0/appHcZTzlfXAJpL7I/tblm2TqCcDcx94nA2?filterByFormula=OR(FIND(%27Cohort%2010%27%2C%20ARRAYJOIN(%7BCohort%7D%2C%20%27%2C%27))%20%3E%200%2C%20%7BCohort%7D%20%3D%20%27Cohort%2010%27%2CFIND(%27Cohort%2011%27%2C%20ARRAYJOIN(%7BCohort%7D%2C%20%27%2C%27))%20%3E%200%2C%20%7BCohort%7D%20%3D%20%27Cohort%2011%27%2CFIND(%27Cohort%2012%27%2C%20ARRAYJOIN(%7BCohort%7D%2C%20%27%2C%27))%20%3E%200%2C%20%7BCohort%7D%20%3D%20%27Cohort%2012%27)',
-        adminUrl: 'https://github.com/alextyang/airtable-cache',
-        dashboardUrl: 'https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour'
-    },
+  {
+    name: "CC Home",
+    url: "https://centercentre.com",
+    adminUrl: "https://centercentre.com/wp-admin",
+    dashboardUrl:
+      "https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/centercentre.com/dashboard",
+  },
+  {
+    name: "Articles",
+    url: "https://articles.centercentre.com",
+    adminUrl: "https://articles.centercentre.com/wp-admin",
+    dashboardUrl:
+      "https://panel.dreamhost.com/index.cgi?tree=domain.dashboard#/site/articles.centercentre.com/dashboard",
+  },
+  {
+    name: "UIE Assets",
+    url: "https://asset.uie.com/",
+    testUrl:
+      "https://asset.uie.com/pdf/2025-07-07-Why-Designing-for-GenAI-is-Different.pdf",
+    adminUrl:
+      "https://www.notion.so/centercentre/PDF-Image-Hosting-201903316fdd8067ac01d1cd3b8dd980?source=copy_link",
+    dashboardUrl:
+      "https://www.notion.so/centercentre/PDF-Image-Hosting-201903316fdd8067ac01d1cd3b8dd980?source=copy_link",
+  },
+  {
+    name: "Forms",
+    url: "https://form.centercentre.com/home",
+    testUrl: "https://form.centercentre.com/forms/contact",
+    adminUrl: "https://form.centercentre.com/home",
+    dashboardUrl:
+      "https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour",
+  },
+  {
+    name: "Visions",
+    url: "https://visions.centercentre.com",
+    adminUrl: "https://github.com/uie-admin/program-sites",
+    dashboardUrl: "https://app.netlify.com/projects/ux-vision/overview",
+  },
+  {
+    name: "Metrics",
+    url: "https://metrics.centercentre.com",
+    adminUrl: "https://github.com/uie-admin/program-sites",
+    dashboardUrl:
+      "https://app.netlify.com/projects/ux-metrics-center-centre/overview",
+  },
+  {
+    name: "Research",
+    url: "https://research.centercentre.com",
+    adminUrl: "https://github.com/uie-admin/program-sites",
+    dashboardUrl:
+      "https://app.netlify.com/projects/ux-research-center-centre/overview",
+  },
+  {
+    name: "Win Stakeholders",
+    url: "https://research.centercentre.com",
+    adminUrl: "https://github.com/uie-admin/program-sites",
+    dashboardUrl: "https://app.netlify.com/projects/winstakeholders/overview",
+  },
+  {
+    name: "GCal Service",
+    url: "https://gcal.centercentre.com",
+    adminUrl: "https://github.com/uie-com/gcal-sync",
+    dashboardUrl:
+      "https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour",
+  },
+  {
+    name: "Postmark Email Server",
+    url: "https://postmark.centercentre.com",
+    adminUrl: "https://github.com/uie-com/postmark-scheduler",
+    dashboardUrl:
+      "https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour",
+  },
+  {
+    name: "PDF Service",
+    url: "https://pdf.centercentre.com",
+    testUrl: "https://pdf.centercentre.com/create",
+    adminUrl: "https://github.com/uie-com/cc-pdf",
+    dashboardUrl: "https://app.netlify.com/projects/uie-pdf/overview",
+  },
+  {
+    name: "Airtable Middleman",
+    url: "https://airtable.centercentre.com",
+    testUrl:
+      "https://airtable.centercentre.com/v0/appHcZTzlfXAJpL7I/tblm2TqCcDcx94nA2?filterByFormula=OR(FIND(%27Cohort%2010%27%2C%20ARRAYJOIN(%7BCohort%7D%2C%20%27%2C%27))%20%3E%200%2C%20%7BCohort%7D%20%3D%20%27Cohort%2010%27%2CFIND(%27Cohort%2011%27%2C%20ARRAYJOIN(%7BCohort%7D%2C%20%27%2C%27))%20%3E%200%2C%20%7BCohort%7D%20%3D%20%27Cohort%2011%27%2CFIND(%27Cohort%2012%27%2C%20ARRAYJOIN(%7BCohort%7D%2C%20%27%2C%27))%20%3E%200%2C%20%7BCohort%7D%20%3D%20%27Cohort%2012%27)",
+    adminUrl: "https://github.com/alextyang/airtable-cache",
+    dashboardUrl:
+      "https://cloud.digitalocean.com/droplets/505867845/graphs?i=176df9&period=hour",
+  },
 ];
 
 const downWebhook = process.env.SLACK_DOWN_WEBHOOK ?? '';
